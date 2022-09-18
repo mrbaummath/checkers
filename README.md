@@ -1,6 +1,6 @@
 # checkers
 
---Project Overview
+## Project Overview
 
     This a checkers app. The app will exist in a single web-page which will include a header, a gameboard, and two players columns to show captured pieces. The columns will be on either side of the gameboard. A user will initialize a game by clicking a button below the board. If they wish, the user will be able to click on an 'instructions' link prior to playing (or during the game). The link will open a transparent pop-up which explicates the rules of the game. 
 
@@ -8,7 +8,7 @@
 
     Gameplay will proceed until a win condition is met or until the user opts to start a new game (perhaps because the players have reached a stalemate). Either player will win when they have captured all of the opposing players pieces. Alternatively, a player will win if the opposing player does not have any valid moves on their turn.
 
---User stories
+## User stories
     --As a user, I want to be able to play checkers against myself or a friend
     --As a user, I want to be reminded of the rules in an unobstrusive but obvious way
     --As a user, I want to be able to see valid moves when I hover over a gamepiece
@@ -20,7 +20,31 @@
     --As a user, I want the game to end when someone has won and I want to be able to start a new game.
     --As a user, I want to be able to start a new game before someone has won
 
---Wireframes:
+## Wireframes:
 
-    --Main page
+##### Main page
 ![Main Page](./readme_img/Main.png)
+
+##### When instructions link is clicked
+![Instrution box](./readme_img/inst.png)
+
+##### During Play
+![During](./readme_img/midplay.png)
+
+During play users will select pirces and be able to capture opponent pieces.
+
+##### Victory
+![Victory](./readme_img/end.png)
+
+When a win condition is met, a popup will inform users.
+
+## Entity Relationships
+
+The two main object types to keep track of will be the game board and the game pieces. Pieces will sit on the game board and the board object will track which tokens are where (not literally, but it will track what types of tokens are on each square). Each token will store its row/column info. 
+
+![ERD](./readme_img/ERD.png)
+
+
+##### Objects and functions 
+
+![Objects](./readme_img/object.png)
