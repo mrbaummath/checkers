@@ -42,7 +42,7 @@ When a win condition is met, a popup will inform users.
 
 The two main object types to keep track of will be the game board and the game pieces. Pieces will sit on the game board and the board object will track which tokens are where (not literally, but it will track what types of tokens are on each square). Each token will store its row/column info. 
 
-![ERD](./readme_img/ERD.png)
+![Entities](./readme_img/ERD.png)
 
 
 ##### Objects and functions 
