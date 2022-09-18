@@ -23,4 +23,4 @@
 --Wireframes:
 
     --Main page
-![Main Page](./readme_img/Main.jpg)
+![Main Page](./readme_img/Main.png)
