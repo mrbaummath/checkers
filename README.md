@@ -48,3 +48,11 @@ The two main object types to keep track of will be the game board and the game p
 ##### Objects and functions 
 
 ![Objects](./readme_img/object.png)
+
+## Schedule
+##### Day 1: get gameboard and game pieces set up 
+##### Day 2: make sure pieces can be clicked and "lift" off page and can be "dropped" onto another square
+##### Day 3: make sure pieces can only be dropped into appropriate squares and game can alternate 
+##### Day 4: win conditions and starting a new game
+##### Day 5: troubleshoot and cleanup 
+
