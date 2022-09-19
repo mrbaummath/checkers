@@ -22,7 +22,24 @@
 }
 
 .box {
+    display:flex;
+    justify-content:center;
+    align-items: center;
     width:12.5%;
     height:100%;
     border: thin solid black;
+}
+
+.token {
+    border-radius:50%;
+    height: 50px;
+    width: 50px;
+}
+
+.token-red {
+    background:red
+}
+
+.token-black {
+    background:black
 }
