@@ -1,0 +1,28 @@
+.container-center {
+    display:flex;
+    justify-content:center;
+    align-items: center;
+    flex-direction:column;
+    width: 100vw;
+    height: 75vw
+}
+
+#game-board {
+    width:50%;
+    height:100%
+}
+
+.row {
+    display:flex;
+    justify-content:left;
+    flex-direction:row;
+    width:100%;
+    border: thin solid black;
+    height: 12.5%
+}
+
+.box {
+    width:12.5%;
+    height:100%;
+    border: thin solid black;
+}
