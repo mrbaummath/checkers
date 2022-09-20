@@ -9,20 +9,11 @@ const tokens = []
 let activeToken = null
 
 //board abstraction
-const boardState = [
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    []
-]
+const boardState = []
 
 //
 
-//function to fill tokens in game board. Takes row numbers and a color. Will fill the relevant rows with tokens of the specified color and append them to the DOM.
+//function to generate tokens in game board. 
 const makeTokens = () => {
     rows.forEach((row, rowNumber) => {
         if (!(rowNumber > 2 && rowNumber < 5)) {
@@ -35,10 +26,13 @@ const makeTokens = () => {
                     token.dataset.column = colNumber
                     tokens.push(token)
                     box.appendChild(token)
+                    //add token to board state
+                    boardState[rowNumber][colNumber] = `${color}`
                 }
             })    
         }
     })
+    console.log(boardState)
 }
 
 //function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes.
@@ -88,7 +82,11 @@ const drawGameBoard = () => {
         }
     })
     //color squares
-  
+    //set boardState variable to all null values.. As tokens are made, they will replace empty squares.
+    for (let i = 0; i < 8; i++) {
+        boardState.push(new Array(8).fill(null))
+    }
+    console.log(boardState)
     //add token images to appropriate squares
     makeTokens()
     //add event listeners to tokens
