@@ -8,7 +8,10 @@ const tokens = []
 //variable to track which token div is "active" - which one has been clicked and is being readied to be moved.
 let activeToken = null
 
-//board abstraction
+//variable to track which color(s) are able to be moved
+let activeColor = ['red', 'black']
+
+//declare board abstraction. Will be filled programtically 
 const boardState = []
 
 //
@@ -22,8 +25,10 @@ const makeTokens = () => {
                 if ((rowNumber % 2 === 0 && colNumber % 2 === 1) || (rowNumber % 2 === 1 && colNumber % 2 === 0)) {
                     let token = document.createElement('div')
                     token.classList.add('token', `token-${color}`)
+                    //set useful data on token
                     token.dataset.row = rowNumber
                     token.dataset.column = colNumber
+                    token.dataset.color = `${color}`
                     tokens.push(token)
                     box.appendChild(token)
                     //add token to board state
@@ -32,7 +37,7 @@ const makeTokens = () => {
             })    
         }
     })
-    console.log(boardState)
+ 
 }
 
 //function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes.
@@ -40,13 +45,21 @@ const findValidMoves  = (token) => {
     let row = parseInt(token.dataset.row)
     let column = parseInt(token.dataset.column)
     let validMoves = []
+    if (token.dataset.color === 'red' || (token.dataset.color === 'black' && token.dataset.type === 'king')) {
+        validMoves.push([row -1, column + 1], [row -1, column - 1])
+    }
+    if (token.dataset.color === 'black' || (token.dataset.color === 'red' && token.dataset.type === 'king')) {
+        validMoves.push ([row + 1, column - 1], [row + 1, column -1])
+    }
+    return validMoves
+
 
 }
 
 //function which "activates" a token and gets it ready to be moved
 const readyToken = (event) => {
     //make sure no other token has alrady been readied to be moved. If not, set active token to the target
-    if (activeToken === null) {
+    if (activeToken === null && activeColor.includes(event.target.dataset.color)) {
         activeToken = event.target
         activeToken.style.border='thick solid orange'
         console.log("token is ready to be moved")
@@ -56,9 +69,13 @@ const readyToken = (event) => {
         activeToken = null
         console.log("active token has been unclicked")
     //if clicked token is not the active token, do nothing
+    } else if (!activeColor.includes(event.target.dataset.color)) {
+        console.log('wait your turn!')
     } else {
         console.log('there is already an active token')
     }
+    console.log(findValidMoves(event.target))
+
 }
 
 //function to draw the gameboard
