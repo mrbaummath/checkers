@@ -20,22 +20,24 @@ const boardState = [
     []
 ]
 
-
+//
 
 //function to fill tokens in game board. Takes row numbers and a color. Will fill the relevant rows with tokens of the specified color and append them to the DOM.
-const fillTokens = (firstRow, lastRow, color) => {
-    rows.slice(firstRow,lastRow + 1).forEach((row,rowNumber) => {
-        row.childNodes.forEach((box,columnNumber) => {
-            if ((rowNumber % 2 === 0 && columnNumber % 2 === 1) || rowNumber % 2 === 1 && columnNumber % 2 === 0) {
-                let token = document.createElement('div')
-                token.classList.add('token', `token-${color}`)
-                token.dataset.type = 'normal'
-                token.dataset.row = box.dataset.row
-                token.dataset.column = box.dataset.column
-                box.appendChild(token)
-                tokens.push(token)
-            }
-        })
+const makeTokens = () => {
+    rows.forEach((row, rowNumber) => {
+        if (!(rowNumber > 2 && rowNumber < 5)) {
+            let color = rowNumber < 3 ? 'black' : 'red'
+            row.childNodes.forEach((box, colNumber) => {
+                if ((rowNumber % 2 === 0 && colNumber % 2 === 1) || (rowNumber % 2 === 1 && colNumber % 2 === 0)) {
+                    let token = document.createElement('div')
+                    token.classList.add('token', `token-${color}`)
+                    token.dataset.row = rowNumber
+                    token.dataset.column = colNumber
+                    tokens.push(token)
+                    box.appendChild(token)
+                }
+            })    
+        }
     })
 }
 
@@ -52,7 +54,7 @@ const readyToken = (event) => {
     //make sure no other token has alrady been readied to be moved. If not, set active token to the target
     if (activeToken === null) {
         activeToken = event.target
-        activeToken.style.border='thick solid black'
+        activeToken.style.border='thick solid orange'
         console.log("token is ready to be moved")
     //if the token clicked is already the active token, un-ready it for mvoement and set active token to none 
     } else if (event.target === activeToken) {
@@ -88,8 +90,7 @@ const drawGameBoard = () => {
     //color squares
   
     //add token images to appropriate squares
-    fillTokens(0,2,'red')
-    fillTokens(5,7,'black')
+    makeTokens()
     //add event listeners to tokens
     tokens.forEach((token) => {
         token.addEventListener('click',readyToken)
