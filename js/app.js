@@ -1,6 +1,8 @@
 //DOM elements
 const gameBoard = document.querySelector('#game-board')
 const rows = []
+const tokens = []
+let activeToken = null
 
 //board abstraction
 const boardState = [
@@ -14,6 +16,8 @@ const boardState = [
     []
 ]
 
+
+
 //function to fill tokens in game board. Takes row numbers and a color.
 const fillTokens = (firstRow, lastRow, color) => {
     rows.slice(firstRow,lastRow + 1).forEach((row) => {
@@ -21,9 +25,37 @@ const fillTokens = (firstRow, lastRow, color) => {
             let token = document.createElement('div')
             token.classList.add('token', `token-${color}`)
             token.dataset.type = 'normal'
+            token.dataset.row = box.dataset.row
+            token.dataset.column = box.dataset.column
             box.appendChild(token)
+            tokens.push(token)
+            
         })
     })
+}
+
+//function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes.
+
+const findValidMoves  = (token) => {
+    let row = parseInt(token.dataset.row)
+    let column = parseInt(token.dataset.column)
+    let validMoves = []
+
+}
+
+//function which "activates" a token and gets it ready to be moved
+const readyToken = (event) => {
+    if (activeToken === null) {
+        activeToken = event.target
+        activeToken.style.border='thick solid black'
+        console.log("token is ready to be moved")
+    } else if (event.target === activeToken) {
+        activeToken.style.border='none'
+        activeToken = null
+        console.log("active token has been unclicked")
+    } else {
+        console.log('there is already an active token')
+    }
 }
 
 //function to draw the gameboard
@@ -47,11 +79,14 @@ const drawGameBoard = () => {
         }
     })
     //color squares
-    console.log(rows)
+  
     //add token images to appropriate squares
     fillTokens(0,2,'red')
     fillTokens(5,7,'black')
     //add event listeners to tokens
+    tokens.forEach((token) => {
+        token.addEventListener('click',readyToken)
+    })
 }
 
 document.addEventListener('DOMContentLoaded', () => {
