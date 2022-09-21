@@ -40,33 +40,78 @@ const makeTokens = () => {
  
 }
 
+//function to determine the status of the spaces directly diagonal to a given token. The function takes a token and returns an object of key value pairs where each key describes a diagonal and each value is the board state at that diagonal
+const getDiag = (token) => {
+    const rowUp = parseInt(token.dataset.row) - 1
+    const rowDown = parseInt(token.dataset.row) + 1
+    const colLeft = parseInt(token.dataset.column) - 1
+    const colRight = parseInt(token.dataset.column) + 1
+
+    const diagonals = {
+        'up' : boardState[rowUp] ? {
+            'left' : boardState[rowUp][colLeft] ? {
+                'color' : boardState[rowUp][colLeft],
+                'row' : rowUp, 
+                'column' : colLeft
+            } : null,
+            'right' : boardState[rowUp][colRight] ? {
+                'color' : boardState[rowUp][colRight],
+                'row' : rowUp,
+                'column' : colRight
+            } : null
+        } : null,
+        'down' : boardState[rowDown] ? {
+            'left' : boardState[rowDown][colLeft] ? {
+                'color' : boardState[rowDown][colLeft],
+                'row' : rowDown, 
+                'column' : colLeft
+            } : null,
+            'right' : boardState[rowDown][colRight] ? {
+                'color' : boardState[rowDown][colRight],
+                'row' : rowDown,
+                'column' : colRight
+            } : null
+        } : null       
+    }
+
+    return diagonals
+}
+
+
 //function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes. If there are no valid moves the functio returns false 
 
 const findValidMoves  = (token) => {
-    let row = parseInt(token.dataset.row)
-    let column = parseInt(token.dataset.column)
-    let validMoves = null
-    if (token.dataset.color === 'red' || (token.dataset.color === 'black' && token.dataset.type === 'king')) {
-        // validMoves.push([row -1, column + 1], [row -1, column - 1])
-        //for red tokens and black tokens with king status which are not on the top row, check for allowable movement up a row
-        if (row !== 0) {
-            //if token is not on left edge, check for allowable movement on left side
-            if (column !== 0) {
-                //allow movement immediately if 
+    const row = parseInt(token.dataset.row)
+    const column = parseInt(token.dataset.column)
+    const diagonals = getDiag(token)
+    let validMoves = []
+
+    //for red tokens and black tokens with king status which are not on the top row, check for allowable movement up a row
+    if (token.dataset.color === 'red' || (token.dataset.color === 'black' && token.dataset.type === 'king' && diagonals.up)) {
+        //allow for movement into an empty up-left square or empty up-right square
+
+        for (let leftRight in diagonals.up) {
+            if (diagonals.up[leftRight] && diagonals.up[leftRight].color === 'e') {
+                validMoves.push([diagonals.up[leftRight].row,diagonals.up[leftRight].column])
             }
-
-
         }
     }
+    
     if (token.dataset.color === 'black' || (token.dataset.color === 'red' && token.dataset.type === 'king')) {
-        // validMoves.push ([row + 1, column - 1], [row + 1, column -1])
+        for (let leftRight in diagonals.down) {
+            if (diagonals.down[leftRight] && diagonals.down[leftRight].color === 'e') {
+                validMoves.push([diagonals.down[leftRight].row,diagonals.down[leftRight].column])
+            }
+        }
     }
     //find DOM boxes corresponding to the valid moves and store them in an array which is returned by the function
+    console.log(validMoves)
     if (validMoves) {
         let validBoxes = validMoves.map(rowColPair =>  (rows[rowColPair[0]].children[rowColPair[1]]))
         return validBoxes
-    } else return false 
+    }
 }
+
 
 
 //function which "activates" a token and gets it ready to be moved
@@ -120,9 +165,9 @@ const drawGameBoard = () => {
         }
     })
     //color squares
-    //set boardState variable to all null values.. As tokens are made, they will replace empty squares.
+    //set boardState variable to all 'e' values for empty.. As tokens are made, they will replace empty squares. As the game progresses it will be helpful to differentiate between empty squares and null/undefined squares that fall ouside the parameters of the game board
     for (let i = 0; i < 8; i++) {
-        boardState.push(new Array(8).fill(null))
+        boardState.push(new Array(8).fill('e'))
     }
     console.log(boardState)
     //add token images to appropriate squares
