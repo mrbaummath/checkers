@@ -40,21 +40,34 @@ const makeTokens = () => {
  
 }
 
-//function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes.
+//function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes. If there are no valid moves the functio returns false 
+
 const findValidMoves  = (token) => {
     let row = parseInt(token.dataset.row)
     let column = parseInt(token.dataset.column)
-    let validMoves = []
+    let validMoves = null
     if (token.dataset.color === 'red' || (token.dataset.color === 'black' && token.dataset.type === 'king')) {
-        validMoves.push([row -1, column + 1], [row -1, column - 1])
+        // validMoves.push([row -1, column + 1], [row -1, column - 1])
+        //for red tokens and black tokens with king status which are not on the top row, check for allowable movement up a row
+        if (row !== 0) {
+            //if token is not on left edge, check for allowable movement on left side
+            if (column !== 0) {
+                //allow movement immediately if 
+            }
+
+
+        }
     }
     if (token.dataset.color === 'black' || (token.dataset.color === 'red' && token.dataset.type === 'king')) {
-        validMoves.push ([row + 1, column - 1], [row + 1, column -1])
+        // validMoves.push ([row + 1, column - 1], [row + 1, column -1])
     }
-    return validMoves
-
-
+    //find DOM boxes corresponding to the valid moves and store them in an array which is returned by the function
+    if (validMoves) {
+        let validBoxes = validMoves.map(rowColPair =>  (rows[rowColPair[0]].children[rowColPair[1]]))
+        return validBoxes
+    } else return false 
 }
+
 
 //function which "activates" a token and gets it ready to be moved
 const readyToken = (event) => {
@@ -74,8 +87,15 @@ const readyToken = (event) => {
     } else {
         console.log('there is already an active token')
     }
-    console.log(findValidMoves(event.target))
 
+}
+
+const moveInto = (event) => {
+    if (activeToken && findValidMoves(activeToken).includes(event.target)) {
+        event.target.appendChild(activeToken)
+        activeToken.style.border='none'
+        
+    } 
 }
 
 //function to draw the gameboard
@@ -95,6 +115,7 @@ const drawGameBoard = () => {
             box.classList.add('box')
             box.dataset.row = rowNumber + 1 
             box.dataset.column = columnNumber
+            box.addEventListener('click', moveInto)
             row.appendChild(box)
         }
     })
@@ -115,6 +136,4 @@ const drawGameBoard = () => {
 document.addEventListener('DOMContentLoaded', () => {
     //draw the gameboard by adding elements to the DOM
     drawGameBoard()
-    
-
 })
