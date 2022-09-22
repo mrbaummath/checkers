@@ -7,8 +7,8 @@ const rows = []
 const tokens = []
 //variable to track which token div is "active" - which one has been clicked and is being readied to be moved.
 let activeToken = null
-//variable to track whether a token has been captured during the current turn
-let wasTokenCaptured = false
+//variable to track a token which has made a capture and could be eligible to keep going
+let takerToken = false
 //objet to track game score
 const capturedBy = {
     'red' : 0,
@@ -16,15 +16,12 @@ const capturedBy = {
 }
 
 //variable to track which color(s) are able to be moved
-let activePlayer = {
-    'red': true,
-    'black' : true
-}
+let lastPlayer = 'black'
 
 //declare board abstraction. Will be filled programtically 
 const boardState = []
 
-//
+
 
 //function to generate tokens in game board. 
 const makeTokens = () => {
@@ -114,7 +111,7 @@ const findValidMoves  = (token) => {
             let diagColor = diagonals.up[leftRight] ? diagonals.up[leftRight].color : null
             //allow for movement if the adjacent diagonal square is empty
             if (diagonals.up[leftRight]) {
-                if (diagColor === 'e' && !wasTokenCaptured) {
+                if (diagColor === 'e' && !takerToken) {
                     validMoves.adjacent.push(rows[diagRow].children[diagCol])
                 //if the diag is not empty, then check for a valid capture if the next diagonal square along the current path is empty
                 } else if (diagColor === oppColor) {
@@ -144,7 +141,7 @@ const findValidMoves  = (token) => {
             let diagColor = diagonals.down[leftRight] ? diagonals.down[leftRight].color : null
             //allow for movement if the adjacent diagonal square is empty
             if (diagonals.down[leftRight]) {
-                if (diagColor === 'e' && !wasTokenCaptured) {
+                if (diagColor === 'e' && !takerToken) {
                     validMoves.adjacent.push(rows[diagRow].children[diagCol])
                 //if the diag is not empty, then check for a valid capture if the next diagonal square along the current path is empty
                 } else if (diagColor === oppColor) {
@@ -152,7 +149,7 @@ const findValidMoves  = (token) => {
                     const candidateDiags = getDiag(candidateToken)
                     if (candidateDiags.down) {
                         //if the active token can jump the opposing token into an empty square, allow for the capture. Push the empty box and the token that could be captured into the valid moves object
-                        if (candidateDiags.down[leftRight].color === 'e') {
+                        if (candidateDiags.down[leftRight] && candidateDiags.down[leftRight].color === 'e') {
                             const boxRow = candidateDiags.down[leftRight].row
                             const boxCol = candidateDiags.down[leftRight].column
                             validMoves.capture.tokens.push(candidateToken)
@@ -164,16 +161,26 @@ const findValidMoves  = (token) => {
            
         } 
     }
-
-    return validMoves
+    if (!validMoves.adjacent.length && !validMoves.capture.boxes.length) {
+        return false
+    } else {
+        return validMoves
+    }
 }
 
 
 
 //function which "activates" a token and gets it ready to be moved or deactivates it if it already is the active token
 const setToken = (event) => {
+    const clickedToken = event.target
+    const currentPlayer = lastPlayer === 'black' ? 'red' : 'black'
+    const clickedColor = clickedToken.dataset.color
+    const chainCapture = findValidMoves(clickedToken) && clickedToken === takerToken
     //make sure no other token has alrady been readied to be moved. If not, set active token to the target. Set the 
-    if (activeToken === null && activePlayer[event.target.dataset.color]) {
+    if (activeToken === null && (chainCapture || clickedColor === currentPlayer)) {
+        if (takerToken != clickedToken) {
+            takerToken = null
+        }
         activeToken = event.target
         activeToken.style.border='thick solid orange'
         console.log("token is ready to be moved")
@@ -183,7 +190,7 @@ const setToken = (event) => {
         activeToken = null
         console.log("active token has been unclicked")
     //if clicked token is not the active token, do nothing
-    } else if (!activePlayer[event.target.dataset.color]) {
+    } else if (clickedColor !== currentPlayer) {
         console.log('wait your turn!')
     } else {
         console.log('there is already an active token')
@@ -206,19 +213,21 @@ const moveToken = (event) => {
         let validCapture = initValid.capture  //let because this will need to be changed if a piece is captured
         //if the move represents a capture, remove the captured piece from the board (add it to opposing player's captured pile) and move the token
         if (validCapture.boxes.includes(event.target)) {
-            wasTokenCaptured = true
+            takerToken = activeToken
             const capturedToken = validCapture.tokens[validCapture.boxes.indexOf(event.target)]
             //before removing the captured token, grab some data to update boardState
             const capturedRow = parseInt(capturedToken.dataset.row)
             const capturedCol = parseInt(capturedToken.dataset.column)
             const capturedColor = capturedToken.dataset.color
             boardState[capturedRow][capturedCol] = 'e'
-            let taker = capturedColor === 'black' ? 'red' : 'black'
+            const taker = capturedColor === 'black' ? 'red' : 'black'
             capturedBy[taker] += 1
+
             //for now, just delete the token and increment the relevant capture count. TBD: instead of deleting, move to captured pile
             capturedToken.remove()
 
         }
+
         if (validAdjacent.includes(event.target) || validCapture.boxes.includes(event.target)) {
             event.target.appendChild(activeToken)
             activeToken.dataset.row = newRow
@@ -226,6 +235,9 @@ const moveToken = (event) => {
             console.log(activeToken)
             boardState[newRow][newCol] = activeToken.dataset.color
             boardState[oldRow][oldCol] = 'e'
+            lastPlayer = activeToken.dataset.color
+            activeToken.style.border = 'none'
+            activeToken = null
         } 
     }
 }
