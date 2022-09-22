@@ -1,5 +1,5 @@
-//DOM elements
-//div containing grid 
+
+//grab the div containing the game grid 
 const gameBoard = document.querySelector('#game-board')
 //array for all row divs. Will push to this as the rows are created 
 const rows = []
@@ -7,9 +7,19 @@ const rows = []
 const tokens = []
 //variable to track which token div is "active" - which one has been clicked and is being readied to be moved.
 let activeToken = null
+//variable to track whether a token has been captured during the current turn
+let wasTokenCaptured = false
+//objet to track game score
+const capturedBy = {
+    'red' : 0,
+    'black': 0
+}
 
 //variable to track which color(s) are able to be moved
-let activeColor = ['red', 'black']
+let activePlayer = {
+    'red': true,
+    'black' : true
+}
 
 //declare board abstraction. Will be filled programtically 
 const boardState = []
@@ -81,43 +91,89 @@ const getDiag = (token) => {
 //function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes. If there are no valid moves the functio returns false 
 
 const findValidMoves  = (token) => {
+    const color = token.dataset.color
+    const oppColor = color === 'black' ? 'red' : 'black'
+    const type = token.dataset.type
     const row = parseInt(token.dataset.row)
     const column = parseInt(token.dataset.column)
     const diagonals = getDiag(token)
-    let validMoves = []
-
-    //for red tokens and black tokens with king status which are not on the top row, check for allowable movement up a row
-    if (token.dataset.color === 'red' || (token.dataset.color === 'black' && token.dataset.type === 'king' && diagonals.up)) {
-        //allow for movement into an empty up-left square or empty up-right square
-
+    const validMoves = {
+        'adjacent' : [],
+        'capture' : {
+            'boxes' : [],
+            'tokens': []
+        }
+    }
+    //for red tokens and black tokens with king status, check for allowable movement up a row
+    if (color === 'red' || (color === 'black' && token.dataset.type === 'king' && diagonals.up)) {
+        //check for valid moves left and right
         for (let leftRight in diagonals.up) {
-            if (diagonals.up[leftRight] && diagonals.up[leftRight].color === 'e') {
-                validMoves.push([diagonals.up[leftRight].row,diagonals.up[leftRight].column])
+            //grab row, column and color of the adjacent diagonal (recall color will be 'e' if the diag is empty)
+            let diagRow = diagonals.up[leftRight] ? diagonals.up[leftRight].row : null
+            let diagCol = diagonals.up[leftRight] ? diagonals.up[leftRight].column : null
+            let diagColor = diagonals.up[leftRight] ? diagonals.up[leftRight].color : null
+            //allow for movement if the adjacent diagonal square is empty
+            if (diagonals.up[leftRight]) {
+                if (diagColor === 'e' && !wasTokenCaptured) {
+                    validMoves.adjacent.push(rows[diagRow].children[diagCol])
+                //if the diag is not empty, then check for a valid capture if the next diagonal square along the current path is empty
+                } else if (diagColor === oppColor) {
+                    const candidateToken = rows[diagRow].children[diagCol].firstChild
+                    const candidateDiags = getDiag(candidateToken)
+                    if (candidateDiags.up) {
+                        //if the active token can jump the opposing token into an empty square, allow for the capture. Push the empty box and the token that could be captured into the valid moves object
+                        if (candidateDiags.up[leftRight].color === 'e') {
+                            const boxRow = candidateDiags.up[leftRight].row
+                            const boxCol = candidateDiags.up[leftRight].column
+                            validMoves.capture.tokens.push(candidateToken)
+                            validMoves.capture.boxes.push(rows[boxRow].children[boxCol])
+                        }
+                    }
+                }
             }
-        }
+           
+        } 
     }
-    
-    if (token.dataset.color === 'black' || (token.dataset.color === 'red' && token.dataset.type === 'king')) {
+    //for black tokens and red tokens with king status, check for allowable movement down a row. The process is the same as for the up row.
+    if (color === 'black' || (color === 'red' && token.dataset.type === 'king' && diagonals.down)) {
+        //check for valid moves left and right
         for (let leftRight in diagonals.down) {
-            if (diagonals.down[leftRight] && diagonals.down[leftRight].color === 'e') {
-                validMoves.push([diagonals.down[leftRight].row,diagonals.down[leftRight].column])
+            //grab row, column and color of the adjacent diagonal (recall color will be 'e' if the diag is empty)
+            let diagRow = diagonals.down[leftRight] ? diagonals.down[leftRight].row : null
+            let diagCol = diagonals.down[leftRight] ? diagonals.down[leftRight].column : null
+            let diagColor = diagonals.down[leftRight] ? diagonals.down[leftRight].color : null
+            //allow for movement if the adjacent diagonal square is empty
+            if (diagonals.down[leftRight]) {
+                if (diagColor === 'e' && !wasTokenCaptured) {
+                    validMoves.adjacent.push(rows[diagRow].children[diagCol])
+                //if the diag is not empty, then check for a valid capture if the next diagonal square along the current path is empty
+                } else if (diagColor === oppColor) {
+                    const candidateToken = rows[diagRow].children[diagCol].firstChild
+                    const candidateDiags = getDiag(candidateToken)
+                    if (candidateDiags.down) {
+                        //if the active token can jump the opposing token into an empty square, allow for the capture. Push the empty box and the token that could be captured into the valid moves object
+                        if (candidateDiags.down[leftRight].color === 'e') {
+                            const boxRow = candidateDiags.down[leftRight].row
+                            const boxCol = candidateDiags.down[leftRight].column
+                            validMoves.capture.tokens.push(candidateToken)
+                            validMoves.capture.boxes.push(rows[boxRow].children[boxCol])
+                        }
+                    }
+                }
             }
-        }
+           
+        } 
     }
-    //find DOM boxes corresponding to the valid moves and store them in an array which is returned by the function
-    console.log(validMoves)
-    if (validMoves) {
-        let validBoxes = validMoves.map(rowColPair =>  (rows[rowColPair[0]].children[rowColPair[1]]))
-        return validBoxes
-    }
+
+    return validMoves
 }
 
 
 
-//function which "activates" a token and gets it ready to be moved
-const readyToken = (event) => {
-    //make sure no other token has alrady been readied to be moved. If not, set active token to the target
-    if (activeToken === null && activeColor.includes(event.target.dataset.color)) {
+//function which "activates" a token and gets it ready to be moved or deactivates it if it already is the active token
+const setToken = (event) => {
+    //make sure no other token has alrady been readied to be moved. If not, set active token to the target. Set the 
+    if (activeToken === null && activePlayer[event.target.dataset.color]) {
         activeToken = event.target
         activeToken.style.border='thick solid orange'
         console.log("token is ready to be moved")
@@ -127,7 +183,7 @@ const readyToken = (event) => {
         activeToken = null
         console.log("active token has been unclicked")
     //if clicked token is not the active token, do nothing
-    } else if (!activeColor.includes(event.target.dataset.color)) {
+    } else if (!activePlayer[event.target.dataset.color]) {
         console.log('wait your turn!')
     } else {
         console.log('there is already an active token')
@@ -135,16 +191,47 @@ const readyToken = (event) => {
 
 }
 
-const moveInto = (event) => {
-    if (activeToken && findValidMoves(activeToken).includes(event.target)) {
-        event.target.appendChild(activeToken)
-        activeToken.style.border='none'
-        
-    } 
+const moveToken = (event) => {
+    //check for an active token. Only call to the function for seeing if this is a valid move if there is
+    if (activeToken) {
+        //grab data and row values to update the board state and the data on the moved token
+        const oldRow = parseInt(activeToken.dataset.row)
+        const oldCol = parseInt(activeToken.dataset.column)
+        const newRow = parseInt(event.target.dataset.row)
+        const newCol = parseInt(event.target.dataset.column)
+        //grab arrays of box elements which are valid to be moved into, whether because they are empty and adjacent or because they represent where the token moves to after a capture
+        const initValid = findValidMoves(activeToken)
+        console.log(initValid)
+        const validAdjacent = initValid.adjacent
+        let validCapture = initValid.capture  //let because this will need to be changed if a piece is captured
+        //if the move represents a capture, remove the captured piece from the board (add it to opposing player's captured pile) and move the token
+        if (validCapture.boxes.includes(event.target)) {
+            wasTokenCaptured = true
+            const capturedToken = validCapture.tokens[validCapture.boxes.indexOf(event.target)]
+            //before removing the captured token, grab some data to update boardState
+            const capturedRow = parseInt(capturedToken.dataset.row)
+            const capturedCol = parseInt(capturedToken.dataset.column)
+            const capturedColor = capturedToken.dataset.color
+            boardState[capturedRow][capturedCol] = 'e'
+            let taker = capturedColor === 'black' ? 'red' : 'black'
+            capturedBy[taker] += 1
+            //for now, just delete the token and increment the relevant capture count. TBD: instead of deleting, move to captured pile
+            capturedToken.remove()
+
+        }
+        if (validAdjacent.includes(event.target) || validCapture.boxes.includes(event.target)) {
+            event.target.appendChild(activeToken)
+            activeToken.dataset.row = newRow
+            activeToken.dataset.column = newCol
+            console.log(activeToken)
+            boardState[newRow][newCol] = activeToken.dataset.color
+            boardState[oldRow][oldCol] = 'e'
+        } 
+    }
 }
 
-//function to draw the gameboard
-const drawGameBoard = () => {
+//function to generate the gameboard and add event listeners to the boxes
+const createGameBoard = () => {
     //create grid. Start by creating 8 rows to append in the board and then iterate to create 8 squares per row
     for (let i=1; i<9; i++) {
         const row = document.createElement('div')
@@ -155,12 +242,12 @@ const drawGameBoard = () => {
     }
     //rows are done, now for each row iteratively create 8 squares.
     rows.forEach((row,rowNumber) => {
-        for (let columnNumber =1; columnNumber < 9; columnNumber++) {
+        for (let columnNumber =0; columnNumber < 8; columnNumber++) {
             const box = document.createElement('div')
             box.classList.add('box')
-            box.dataset.row = rowNumber + 1 
+            box.dataset.row = rowNumber
             box.dataset.column = columnNumber
-            box.addEventListener('click', moveInto)
+            box.addEventListener('click', moveToken)
             row.appendChild(box)
         }
     })
@@ -169,16 +256,15 @@ const drawGameBoard = () => {
     for (let i = 0; i < 8; i++) {
         boardState.push(new Array(8).fill('e'))
     }
-    console.log(boardState)
     //add token images to appropriate squares
     makeTokens()
     //add event listeners to tokens
     tokens.forEach((token) => {
-        token.addEventListener('click',readyToken)
+        token.addEventListener('click',setToken)
     })
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     //draw the gameboard by adding elements to the DOM
-    drawGameBoard()
+    createGameBoard()
 })
