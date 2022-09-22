@@ -43,3 +43,17 @@
 .token-black {
     background:black
 }
+
+.pop-up {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 20%;
+    top: 25%;
+    width: 60%;
+    height: 30%;
+    background: white;
+    border: thin solid black
+
+}

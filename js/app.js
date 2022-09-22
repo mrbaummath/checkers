@@ -21,10 +21,63 @@ let lastPlayer = 'black'
 //declare board abstraction. Will be filled programtically 
 const boardState = []
 
+const newGame = () => {
+    rows.length = 0
+    tokens.length = 0
+    activeToken = null
+    takerToken = false
+    capturedBy.red = 0
+    capturedBy.black = 0
+    lastPlayer = 'black'
+    boardState.length = 0
+    while (gameBoard.firstChild) {
+        gameBoard.removeChild(gameBoard.firstChild)
+    }
+    createGameBoard()
+}
 
+//function to disable event listeners and effectively end the game
+const endGame = () => {
+    tokens.forEach((token) => {
+        token.removeEventListener('click', setToken)
+    })
+    rows.forEach((row) => {
+       row.childNodes.forEach((box) => {
+        box.removeEventListener('click', moveToken)
+       })
+    })
+}
+
+//function to check whether a given player has any valid moves remaining.
+const anyValidMoves = (player) => {
+    const playerTokens = Array.from(document.querySelectorAll(`.token-${player}`))
+    if (playerTokens.some(token => (findValidMoves(token)))) {
+        return true
+    } else {
+        return false
+    }
+
+}
+
+//function to check for win conditions
+const checkWin = () => {
+    const otherPlayer = lastPlayer === 'black' ? 'red' : 'black' 
+    //last player to go wins if capture count is now 12 for that player.
+    if (capturedBy[lastPlayer] === 12 || !anyValidMoves(otherPlayer)) {
+        const winBox = document.querySelector('#win-box')
+        const winMessage = document.querySelector('#win-message')
+        winMessage.textContent = `${lastPlayer} has won the game. Click 'restart' to start a new game`
+        winBox.style.display = 'flex'
+        // endGame()
+    //check to see if the other player has any valid moves
+    } else {
+        return false
+    }
+}
 
 //function to generate tokens in game board. 
 const makeTokens = () => {
+
     rows.forEach((row, rowNumber) => {
         if (!(rowNumber > 2 && rowNumber < 5)) {
             let color = rowNumber < 3 ? 'black' : 'red'
@@ -111,7 +164,7 @@ const findValidMoves  = (token) => {
             let diagColor = diagonals.up[leftRight] ? diagonals.up[leftRight].color : null
             //allow for movement if the adjacent diagonal square is empty
             if (diagonals.up[leftRight]) {
-                if (diagColor === 'e' && !takerToken) {
+                if (diagColor === 'e') {
                     validMoves.adjacent.push(rows[diagRow].children[diagCol])
                 //if the diag is not empty, then check for a valid capture if the next diagonal square along the current path is empty
                 } else if (diagColor === oppColor) {
@@ -119,7 +172,7 @@ const findValidMoves  = (token) => {
                     const candidateDiags = getDiag(candidateToken)
                     if (candidateDiags.up) {
                         //if the active token can jump the opposing token into an empty square, allow for the capture. Push the empty box and the token that could be captured into the valid moves object
-                        if (candidateDiags.up[leftRight].color === 'e') {
+                        if (candidateDiags.up[leftRight] && candidateDiags.up[leftRight].color === 'e') {
                             const boxRow = candidateDiags.up[leftRight].row
                             const boxCol = candidateDiags.up[leftRight].column
                             validMoves.capture.tokens.push(candidateToken)
@@ -141,7 +194,7 @@ const findValidMoves  = (token) => {
             let diagColor = diagonals.down[leftRight] ? diagonals.down[leftRight].color : null
             //allow for movement if the adjacent diagonal square is empty
             if (diagonals.down[leftRight]) {
-                if (diagColor === 'e' && !takerToken) {
+                if (diagColor === 'e') {
                     validMoves.adjacent.push(rows[diagRow].children[diagCol])
                 //if the diag is not empty, then check for a valid capture if the next diagonal square along the current path is empty
                 } else if (diagColor === oppColor) {
@@ -172,14 +225,18 @@ const findValidMoves  = (token) => {
 
 //function which "activates" a token and gets it ready to be moved or deactivates it if it already is the active token
 const setToken = (event) => {
+    event.stopPropagation()
     const clickedToken = event.target
     const currentPlayer = lastPlayer === 'black' ? 'red' : 'black'
     const clickedColor = clickedToken.dataset.color
-    const chainCapture = findValidMoves(clickedToken) && clickedToken === takerToken
+    const chainCapture = (takerToken === clickedToken && findValidMoves(clickedToken) && findValidMoves(clickedToken).capture.boxes.length)
+    if (!chainCapture) {
+        takerToken = false
+    }
     //make sure no other token has alrady been readied to be moved. If not, set active token to the target. Set the 
     if (activeToken === null && (chainCapture || clickedColor === currentPlayer)) {
         if (takerToken != clickedToken) {
-            takerToken = null
+            takerToken = false
         }
         activeToken = event.target
         activeToken.style.border='thick solid orange'
@@ -199,18 +256,21 @@ const setToken = (event) => {
 }
 
 const moveToken = (event) => {
+    event.stopPropagation()
     //check for an active token. Only call to the function for seeing if this is a valid move if there is
-    if (activeToken) {
+    const boxToken = event.target.firstChild 
+    //only act on empty squares when there is an active token
+    if (activeToken && !boxToken) {
         //grab data and row values to update the board state and the data on the moved token
         const oldRow = parseInt(activeToken.dataset.row)
         const oldCol = parseInt(activeToken.dataset.column)
         const newRow = parseInt(event.target.dataset.row)
         const newCol = parseInt(event.target.dataset.column)
+        const color = activeToken.dataset.color
         //grab arrays of box elements which are valid to be moved into, whether because they are empty and adjacent or because they represent where the token moves to after a capture
-        const initValid = findValidMoves(activeToken)
-        console.log(initValid)
-        const validAdjacent = initValid.adjacent
-        let validCapture = initValid.capture  //let because this will need to be changed if a piece is captured
+        const validMoves = findValidMoves(activeToken)
+        const validAdjacent = validMoves.adjacent
+        let validCapture = validMoves.capture 
         //if the move represents a capture, remove the captured piece from the board (add it to opposing player's captured pile) and move the token
         if (validCapture.boxes.includes(event.target)) {
             takerToken = activeToken
@@ -227,18 +287,24 @@ const moveToken = (event) => {
             capturedToken.remove()
 
         }
-
-        if (validAdjacent.includes(event.target) || validCapture.boxes.includes(event.target)) {
+        //if move is not a capture, make sure there has not already been a token used to make a capture during this turn. If the move is a capture, it doesn't matter so allow the move.
+        if ((validAdjacent.includes(event.target) && !takerToken) || validCapture.boxes.includes(event.target)) {
             event.target.appendChild(activeToken)
             activeToken.dataset.row = newRow
             activeToken.dataset.column = newCol
-            console.log(activeToken)
             boardState[newRow][newCol] = activeToken.dataset.color
             boardState[oldRow][oldCol] = 'e'
+            //check if the active token needs king status and apply it if need
+            if ((color === 'black' && newRow === 7) || (color ==='red' && newRow === 0)) {
+                activeToken.dataset.type = 'king'
+            }
             lastPlayer = activeToken.dataset.color
             activeToken.style.border = 'none'
             activeToken = null
+           
         } 
+        //check for a win condition being met
+        checkWin()
     }
 }
 
@@ -279,4 +345,7 @@ const createGameBoard = () => {
 document.addEventListener('DOMContentLoaded', () => {
     //draw the gameboard by adding elements to the DOM
     createGameBoard()
+    //set restart listener on restart button
+    const restartBtn = document.querySelector('#restart')
+    restartBtn.addEventListener('click', newGame)
 })
