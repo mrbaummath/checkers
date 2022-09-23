@@ -320,6 +320,8 @@ const moveToken = (event) => {
             //check if the active token needs king status and apply it if need
             if ((color === 'black' && newRow === 7) || (color ==='red' && newRow === 0)) {
                 activeToken.dataset.type = 'king'
+                activeToken.classList.add('king')
+
             }
             lastPlayer = activeToken.dataset.color
             activeToken.style.border = 'none'

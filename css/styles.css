@@ -105,8 +105,8 @@ p {
 
 .token {
     border-radius:50%;
-    height: 80%;
-    width: 80%;
+    height: 85%;
+    width: 85%;
 }
 
 .token-red {
@@ -114,8 +114,17 @@ p {
 }
 
 .token-black {
-    background: rgba(0,0,50,.6)
+    background: rgba(10,10,50,.6)
 }
+
+
+.king {
+    background-image: url('./../images/crown-solid.svg');
+    background-size: contain;
+    background-repeat: no-repeat;  
+}
+
+
 
 #pop-up {
     display: none;
@@ -171,5 +180,12 @@ p {
     display:flex;
     justify-content: center;
     align-items: center
+}
+
+button {
+    margin: 10px;
+    width: 6em;
+    font-size: 1em;
+    border-radius:10%;
 }
 
