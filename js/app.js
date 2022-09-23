@@ -1,6 +1,15 @@
 
 //grab the div containing the game grid 
 const gameBoard = document.querySelector('#game-board')
+//grab DOM element for the pop-up box so its display can be toggled
+const popUp = document.querySelector('#pop-up')
+//get instruction text so its display can be toggled 
+const instructions = document.querySelector('#instructions')
+//grab win-message node so it can be toggled and so a message can be programatically put into it
+const winMessage = document.querySelector('#win-message')
+//grab both capture zones to append captured tokens into
+const redCapture = document.querySelector('#red-capture')
+const blackCapture = document.querySelector('#black-capture')
 //array for all row divs. Will push to this as the rows are created 
 const rows = []
 //array for all token divs. Will push to this as the tokens are generated 
@@ -33,6 +42,10 @@ const newGame = () => {
     while (gameBoard.firstChild) {
         gameBoard.removeChild(gameBoard.firstChild)
     }
+    instructions.style.display = 'none'
+    winMessage.style.display = 'none'
+    winMessage.firstChild.textContent = ''
+    popUp.style.display = 'none'
     createGameBoard()
 }
 
@@ -64,12 +77,12 @@ const checkWin = () => {
     const otherPlayer = lastPlayer === 'black' ? 'red' : 'black' 
     //last player to go wins if capture count is now 12 for that player.
     if (capturedBy[lastPlayer] === 12 || !anyValidMoves(otherPlayer)) {
-        const winBox = document.querySelector('#win-box')
-        const winMessage = document.querySelector('#win-message')
-        winMessage.textContent = `${lastPlayer} has won the game. Click 'restart' to start a new game`
-        winBox.style.display = 'flex'
-        // endGame()
-    //check to see if the other player has any valid moves
+        instructions.style.display = 'none'
+        const winText  = `${lastPlayer} has won the game. Click 'restart' to start a new game`
+        winMessage.firstChild.textContent = winText
+        popUp.style.display = 'flex'
+        winMessage.style.display = 'block'
+        endGame()
     } else {
         return false
     }
@@ -255,6 +268,7 @@ const setToken = (event) => {
 
 }
 
+
 const moveToken = (event) => {
     event.stopPropagation()
     //check for an active token. Only call to the function for seeing if this is a valid move if there is
@@ -283,8 +297,17 @@ const moveToken = (event) => {
             const taker = capturedColor === 'black' ? 'red' : 'black'
             capturedBy[taker] += 1
 
-            //for now, just delete the token and increment the relevant capture count. TBD: instead of deleting, move to captured pile
-            capturedToken.remove()
+            //append the captured token into the opposing player's zone and remove it's event listener
+            const zone = capturedColor === 'red' ? blackCapture : redCapture
+            const capturedTokenDiv = document.createElement('div')
+            capturedToken.removeEventListener('click',setToken)
+            const boxStyle = getComputedStyle(document.querySelector('.box'))
+            //assign the div containing the captured token to have the current height and width of a gameboard div. This will make it so the tokens in the capture area have the size of the game tokens (at least when captured)
+            capturedTokenDiv.classList.add('capture-box')
+            capturedTokenDiv.style.height = boxStyle.getPropertyValue('height')
+            capturedTokenDiv.style.width = boxStyle.getPropertyValue('width')
+            zone.appendChild(capturedTokenDiv)
+            capturedTokenDiv.appendChild(capturedToken)
 
         }
         //if move is not a capture, make sure there has not already been a token used to make a capture during this turn. If the move is a capture, it doesn't matter so allow the move.
@@ -347,10 +370,44 @@ const createGameBoard = () => {
     })
 }
 
+//function to resize captured tokens if there are any
+const resizeCaptured = () => {
+
+    const zones = document.querySelectorAll('.captured-tokens')
+
+    zones.forEach((zone) => {
+        if (zone.querySelectorAll('div')) {
+            const captureDivs = Array.from(zone.querySelectorAll('.capture-box'))
+            const style = getComputedStyle(document.querySelector('.box'))
+            captureDivs.forEach((div) => {
+                div.style.height = style.getPropertyValue('height')
+                div.style.width = style.getPropertyValue('width')
+            })
+        }
+    })
+
+
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     //draw the gameboard by adding elements to the DOM
     createGameBoard()
     //set restart listener on restart button
     const restartBtn = document.querySelector('#restart')
     restartBtn.addEventListener('click', newGame)
+    //set listener on pop-up close icon
+    const closeIcon = document.querySelector('#popup-close')
+    closeIcon.addEventListener('click', () => {
+        popUp.style.display = 'none'
+        instructions.style.display = 'none'
+        winMessage.style.display = 'none'
+    })
+    //set listener on instructions link
+    const rulesLink = document.querySelector('#rules-link')
+    rulesLink.addEventListener('click', () => {
+        popUp.style.display = 'flex'
+        instructions.style.display = 'block'
+    })
+    //add a window resize event to the window to resize captured tokens if there are any
+    window.onresize = resizeCaptured
 })

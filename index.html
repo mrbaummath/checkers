@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/e7592f3913.js" crossorigin="anonymous"></script>
     <title>Checkers</title>
 </head>
 <body>
@@ -16,20 +17,34 @@
         <p>If you need a rules refresher, click <span id='rules-link'>here</span></p>
     </div>
     <div class="container">
-        <div id="win-box" class="pop-up">
-            <p id="win-message"></p>
+        <div id="pop-up">
+            <i class="fa-solid fa-x fa-s close" id="popup-close"></i>
+            <div class="pop-message" id="instructions">
+                <p>Players take turns moving their tokens to diagonally adjacent spaces which are empty (see below for capture rule). Red tokens may only move up the board and black tokens may only move down. If, however, a piece reaches the opposing end-row, that piece is granted "king" status and may move and capture diagonally up or down.</p>
+                <p>The objective is to capture all of the opposing player's tokens. If your token is diagonally adjacent to an opposing player's token (in the direction of your allowed movement) AND the space immediately adjacent along the same diagonal to that opposing piece is empty, you may "jump" the opposing token and capture it. If a capture results in another opportunity for capture, the player may opt to make the capture or end their turn</p>
+                <p>A player wins either when they have captured all of the other player's tokens or when the opposing player has no valid moves on the board. Players may opt to restart the game at any time by clicking the restart button</p>
+            </div>
+            <div class="pop-message" id="win-message">
+                <p></p>
+            </div>
+            
+        
         </div>
     
         
-        <div id="red-capture" class="capture-zone">
+        <div class="capture-zone">
             <h3>Red's Captured Tokens</h3>
+            <div id="red-capture" class="captured-tokens">
+            </div>
         </div>
     
         <div id ="game-board">
         </div>
         
-        <div id="black-capture" class="capture-zone">
+        <div class="capture-zone">
             <h3>Black's Captured Tokens</h3>
+            <div id="black-capture" class="captured-tokens">
+            </div>
         </div>
     
     </div>
