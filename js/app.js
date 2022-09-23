@@ -323,6 +323,11 @@ const createGameBoard = () => {
         for (let columnNumber =0; columnNumber < 8; columnNumber++) {
             const box = document.createElement('div')
             box.classList.add('box')
+            if ((rowNumber + columnNumber) % 2 === 1) {
+                box.classList.add('box-checker')
+            } else {
+                box.classList.add('box-no-checker')
+            }
             box.dataset.row = rowNumber
             box.dataset.column = columnNumber
             box.addEventListener('click', moveToken)

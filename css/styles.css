@@ -1,15 +1,65 @@
+body{
+    font-family: 'Nunito', sans-serif;
+    background-color: rgba(84,130,176,.4)
+}
+
+.container {
+    display: flex;
+    flex-direction:row;
+    width: 100vw;
+    margin: 0 auto
+}
+
+
 .container-center {
     display:flex;
     justify-content:center;
     align-items: center;
-    flex-direction:column;
-    width: 100vw;
-    height: 75vw
+    flex-direction: column;
+    margin-bottom: 2em;
+    
+}
+
+h1 {
+    font-size: 2.5em;
+    margin: .25em;
+}
+
+h3 {
+    margin-top: 0
+}
+
+p {
+    font-size: 1.3em;
+    margin: .1em;
+    width: 100%;
+    text-align:left;
+    padding-left:2em
+}
+
+#rules-link {
+    text-decoration:underline;
 }
 
 #game-board {
-    width:50%;
-    height:100%
+    max-width: 800px;
+    max-height: 800px;
+    width:60vw;
+    height:60vw;
+    margin: 10px auto;
+    margin-top: 2em
+}
+
+.capture-zone {
+    height: 100%;
+    display:flex;
+    flex-direction:row;
+    align-items:left;
+    width: 15%;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    flex-grow: 1
 }
 
 .row {
@@ -18,11 +68,11 @@
     flex-direction:row;
     width:100%;
     border: thin solid black;
-    height: 12.5%
+    height: 12%
 }
 
 .box {
-    display:flex;
+    display: flex;
     justify-content:center;
     align-items: center;
     width:12.5%;
@@ -32,16 +82,16 @@
 
 .token {
     border-radius:50%;
-    height: 50px;
-    width: 50px;
+    height: 80%;
+    width: 80%;
 }
 
 .token-red {
-    background:red
+    background: rgba(235,50,50,.6)
 }
 
 .token-black {
-    background:black
+    background: rgba(0,0,50,.6)
 }
 
 .pop-up {
@@ -56,4 +106,12 @@
     background: white;
     border: thin solid black
 
+}
+
+.box-checker {
+    background: rgba(160,160,200,.8)
+}
+
+.box-no-checker {
+    background: rgba(245,195,203,.8)
 }
