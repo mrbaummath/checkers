@@ -71,11 +71,8 @@ const endGame = () => {
 
 //function to check whether a given player has any valid moves remaining.
 const anyValidMoves = (player) => {
-    console.log(player)
     const playerTokens = Array.from(gameBoard.querySelectorAll(`.token-${player}`))
     if (playerTokens.some(token => {
-        if (findValidMoves(token)) {console.log(token)}
-        console.log(findValidMoves(token))
         return findValidMoves(token)
     })) {
         return true
