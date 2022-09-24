@@ -345,7 +345,7 @@ const moveToken = (event) => {
            
         }
         //check for a win condition being met
-        checkWin()
+        setTimeout(checkWin(), 750)
     }
 }
 
