@@ -107,6 +107,7 @@ p {
     border-radius:50%;
     height: 85%;
     width: 85%;
+    transition: transform .5s;
 }
 
 .token-red {

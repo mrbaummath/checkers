@@ -268,6 +268,18 @@ const setToken = (event) => {
 
 }
 
+const translate = (movedNode,destinationNode) => {
+    const pointARect = destinationNode.getBoundingClientRect()
+    const pointBRect = movedNode.getBoundingClientRect()
+    const xTrans = pointARect.x - pointBRect.x
+    const yTrans = pointARect.y - pointBRect.y
+    movedNode.style.transform = `translate(${xTrans}px, ${yTrans}px)`
+    setTimeout(()=> {
+        destinationNode.appendChild(movedNode)
+        movedNode.style.removeProperty('transform')
+    },600)
+}
+
 
 const moveToken = (event) => {
     event.stopPropagation()
@@ -307,13 +319,17 @@ const moveToken = (event) => {
             capturedTokenDiv.style.height = boxStyle.getPropertyValue('height')
             capturedTokenDiv.style.width = boxStyle.getPropertyValue('width')
             zone.appendChild(capturedTokenDiv)
-            capturedTokenDiv.appendChild(capturedToken)
+            //call translate function
+            translate(capturedToken,capturedTokenDiv)
+            //append token to capture area
+            // capturedTokenDiv.appendChild(capturedToken)
 
         }
         //if move is not a capture, make sure there has not already been a token used to make a capture during this turn. If the move is a capture, it doesn't matter so allow the move.
         if ((validAdjacent.includes(event.target) && !takerToken) || validCapture.boxes.includes(event.target)) {
-            event.target.appendChild(activeToken)
-            activeToken.dataset.row = newRow
+            translate(activeToken,event.target)
+            // event.target.appendChild(activeToken)
+            setTimeout(()=>{activeToken.dataset.row = newRow
             activeToken.dataset.column = newCol
             boardState[newRow][newCol] = activeToken.dataset.color
             boardState[oldRow][oldCol] = 'e'
@@ -325,9 +341,9 @@ const moveToken = (event) => {
             }
             lastPlayer = activeToken.dataset.color
             activeToken.style.border = 'none'
-            activeToken = null
+            activeToken = null },700)
            
-        } 
+        }
         //check for a win condition being met
         checkWin()
     }
