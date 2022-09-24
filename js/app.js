@@ -42,6 +42,14 @@ const newGame = () => {
     while (gameBoard.firstChild) {
         gameBoard.removeChild(gameBoard.firstChild)
     }
+    const redCapture = document.querySelector('#red-capture')
+    const blackCapture = document.querySelector('#black-capture')
+    while (redCapture.firstChild) {
+        redCapture.removeChild(redCapture.firstChild)
+    }
+    while (blackCapture.firstChild) {
+        blackCapture.removeChild(blackCapture.firstChild)
+    }
     instructions.style.display = 'none'
     winMessage.style.display = 'none'
     winMessage.firstChild.textContent = ''
@@ -63,8 +71,13 @@ const endGame = () => {
 
 //function to check whether a given player has any valid moves remaining.
 const anyValidMoves = (player) => {
-    const playerTokens = Array.from(document.querySelectorAll(`.token-${player}`))
-    if (playerTokens.some(token => (findValidMoves(token)))) {
+    console.log(player)
+    const playerTokens = Array.from(gameBoard.querySelectorAll(`.token-${player}`))
+    if (playerTokens.some(token => {
+        if (findValidMoves(token)) {console.log(token)}
+        console.log(findValidMoves(token))
+        return findValidMoves(token)
+    })) {
         return true
     } else {
         return false
@@ -298,7 +311,7 @@ const moveToken = (event) => {
         const validAdjacent = validMoves.adjacent
         let validCapture = validMoves.capture 
         //if the move represents a capture, remove the captured piece from the board (add it to opposing player's captured pile) and move the token
-        if (validCapture.boxes.includes(event.target)) {
+        if (validCapture && validCapture.boxes.includes(event.target)) {
             takerToken = activeToken
             const capturedToken = validCapture.tokens[validCapture.boxes.indexOf(event.target)]
             //before removing the captured token, grab some data to update boardState
