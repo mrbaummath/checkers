@@ -1,4 +1,61 @@
 
+const tokens = {}
+const boxArray = []
+
+class Token {
+    constructor(color, box, node) {
+        this.color = color
+        this.box = box
+        this.node = node
+        this.row = box.dataset.row
+        this.column = box.dataset.column
+        this.isCaptured = false 
+        this.type = 'regular'
+
+    }
+    get validMovesAdj() {
+        return this.findValidMoves.adjacent
+    }
+    get validCaptures() {
+        return this.findValidMoves.captures
+    }
+
+    findValidMoves() {
+        const validMoves =  {
+            'adjacent' : [],
+            'capture' : {
+                'boxes' : [],
+                'tokens': []
+            }
+        } 
+        if (this.color === 'red' || this.color === 'black' && this.type === 'king' ) {
+            //check row up provided token is not alredy on upmost row
+            if (this.row > 0 ) {
+                const upRow = this.row + 1
+                const leftCol = this.column - 1
+                const rightCol = this.column + 1
+                //if adjacent up-left diagonal square exists and is empty, count as a valid moce
+                if (this.column > 1 && boxArray[upRow][leftCol].color === 'e') {
+                    validMoves.adjacent.push(boxArray[upRow][leftCol].node) 
+                    //if left adjacent diagonal has the opposite color, check for a valid capture. Note that the token can only have a capture if it is in or below row 
+                } else if (this.row > 1 && this.column > 1 && boxArray[upRow][leftCol].color !== this.color && )
+                if (this.column < 7 && boxArray[upRow][rightCol].color === 'e') {
+                    validMoves.adjacent.push(boxArray[upRow][leftCol].node)
+                }
+            }
+        }
+
+    }
+
+    
+}
+
+
+
+
+
+//below is original code
+
 //grab the div containing the game grid 
 const gameBoard = document.querySelector('#game-board')
 //grab DOM element for the pop-up box so its display can be toggled
@@ -13,7 +70,7 @@ const blackCapture = document.querySelector('#black-capture')
 //array for all row divs. Will push to this as the rows are created 
 const rows = []
 //array for all token divs. Will push to this as the tokens are generated 
-const tokens = []
+
 //variable to track which token div is "active" - which one has been clicked and is being readied to be moved.
 let activeToken = null
 //variable to track a token which has made a capture and could be eligible to keep going
@@ -27,8 +84,7 @@ const capturedBy = {
 //variable to track which color(s) are able to be moved
 let lastPlayer = 'black'
 
-//declare board abstraction. Will be filled programtically 
-const boardState = []
+
 
 const newGame = () => {
     rows.length = 0
