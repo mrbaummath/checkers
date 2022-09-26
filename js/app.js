@@ -215,11 +215,12 @@ const setToken = (event) => {
     const chainCapture = (tokenObj.madeCapture && tokenObj.validCaptures)
     //make sure no other token has alrady been readied to be moved. If not, set active token to the target. Set the 
     if (activeToken === null && (chainCapture || clickedColor === currentPlayer)) {
-        if (takerToken != clickedToken) {
+        if (takerToken != tokenObj) {
             takerToken = false
         }
-        activeToken = event.target
-        activeToken.style.border='thick solid orange'
+        activeToken = tokenObj
+        tokenObj.isActive = true
+        activeToken.node.style.border='thick solid orange'
         console.log("token is ready to be moved")
     //if the token clicked is already the active token, un-ready it for mvoement and set active token to none 
     } else if (event.target === activeToken) {
