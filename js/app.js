@@ -1,4 +1,4 @@
-
+// good job declaring all your global level variables first, WITH DESCRIPTIVE COMMENTS !? chef kiss
 //grab the div containing the game grid 
 const gameBoard = document.querySelector('#game-board')
 //grab DOM element for the pop-up box so its display can be toggled
@@ -30,6 +30,7 @@ let lastPlayer = 'black'
 //declare board abstraction. Will be filled programtically 
 const boardState = []
 
+// al function declarations together - very nice
 const newGame = () => {
     rows.length = 0
     tokens.length = 0
@@ -164,6 +165,7 @@ const getDiag = (token) => {
 //function which takes a token element and determines which boxes are valid places to move the token into. The function returns an array of the valid box nodes. If there are no valid moves the functio returns false 
 
 const findValidMoves  = (token) => {
+    // some unused variables here 
     const color = token.dataset.color
     const oppColor = color === 'black' ? 'red' : 'black'
     const type = token.dataset.type
@@ -420,6 +422,8 @@ const resizeCaptured = () => {
 
 }
 
+
+// All evocations executed in one spot in a way that makes sense, love how well organized your code is
 document.addEventListener('DOMContentLoaded', () => {
     //draw the gameboard by adding elements to the DOM
     createGameBoard()
