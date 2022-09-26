@@ -47,13 +47,15 @@ class Box {
 }
 
 class Token {
-    constructor(color, box) {
-        this.color = color
+    constructor(box) {
+        this.color = box.row > 4 ? 'red' : 'black'
         this.box = box
+        this.row = box.row
+        this.column = box.column
         this.node = this.makeNode()
-        this.row = box.dataset.row
-        this.column = box.dataset.column
-        this.isCaptured = false 
+        this.isCaptured = false
+        this.madeCapture = false
+        this.isActive = false 
         this.type = 'regular'
         tokens.push(this)
     }
@@ -63,13 +65,18 @@ class Token {
     get validCaptures() {
         return this.findValidMoves.captures
     }
+    get allMoves() {
+        return this.findValidMoves
+    }
 
     makeNode() {
         const tokenNode = document.createElement('div')
         tokenNode.classList.add('token', `token-${this.color}`)
         tokenNode.dataset.row = this.row
         tokenNode.dataset.column = this.column
-        token.dataset.color = this.color
+        tokenNode.dataset.color = this.color
+        tokenNode.addEventListener('click', setToken)
+        return tokenNode
 
     }
 
@@ -100,8 +107,6 @@ class Token {
             })
         })
 
-
-
     }
 
     findDiagonal(upOrDown,leftOrRight) {
@@ -113,8 +118,7 @@ class Token {
         return boxArray[rowCheck][colCheck]
 
     }
-
-    
+   
 }
 
 
@@ -195,18 +199,6 @@ const checkWin = () => {
     }
 }
 
-//function to generate tokens in game board. 
-const makeTokens = () => {
-
-    rows.forEach((row, rowNumber) => {
-        if (!(rowNumber > 2 && rowNumber < 5)) {
-            let color = rowNumber < 3 ? 'black' : 'red'
-            const token = new Token(color)
-        }
-            
-    })
- 
-}
 
 
 
@@ -216,12 +208,11 @@ const makeTokens = () => {
 const setToken = (event) => {
     event.stopPropagation()
     const clickedToken = event.target
+    const tokenObj = boxArray[clickedToken.dataset.row][clickedToken.dataset.column].token
+    // const clickedTokenObject = boxArray[clickedToken.dataset.row][clickedToken.dataset.column].token
     const currentPlayer = lastPlayer === 'black' ? 'red' : 'black'
-    const clickedColor = clickedToken.dataset.color
-    const chainCapture = (takerToken === clickedToken && findValidMoves(clickedToken) && findValidMoves(clickedToken).capture.boxes.length)
-    if (!chainCapture) {
-        takerToken = false
-    }
+    const clickedColor = tokenObj.color
+    const chainCapture = (tokenObj.madeCapture && tokenObj.validCaptures)
     //make sure no other token has alrady been readied to be moved. If not, set active token to the target. Set the 
     if (activeToken === null && (chainCapture || clickedColor === currentPlayer)) {
         if (takerToken != clickedToken) {
@@ -339,22 +330,17 @@ const createGameBoard = () => {
         gameBoard.appendChild(row)
         rows.push(row)
     }
-    //rows are done, now for each row iteratively create 8 squares.
+    //rows are done, now for each row iteratively create 8 squares. Add a token if the box is supposed to have a token
     rows.forEach((row,rowNumber) => {
         for (let colNumber = 0; colNumber < 8; colNumber ++) {
             const box = new Box(rowNumber, colNumber)
-            
             row.appendChild(box.node)
+            if (!(rowNumber === 3 || rowNumber === 4) && box.node.classList.contains('box-checker')) {
+                const token = new Token(box)
+                box.token = token
+                box.node.appendChild(token.node)
+            }
         }
-    })
-    console.log(boxArray)
-    //set boardState variable to all 'e' values for empty.. As tokens are made, they will replace empty squares. As the game progresses it will be helpful to differentiate between empty squares and null/undefined squares that fall ouside the parameters of the game board
-
-    //add token images to appropriate squares
-    makeTokens()
-    //add event listeners to tokens
-    tokens.forEach((token) => {
-        token.addEventListener('click',setToken)
     })
 }
 
