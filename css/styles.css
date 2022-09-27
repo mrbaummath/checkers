@@ -190,3 +190,7 @@ button {
     border-radius:10%;
 }
 
+.token-active {
+    border: thick solid orange
+}
+
